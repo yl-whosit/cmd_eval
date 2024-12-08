@@ -12,10 +12,12 @@ core.register_chatcommand("eval",
             -- echo input back
             core.chat_send_player(name, "> " .. code)
 
-            local func, err = loadstring(code, "usercode")
+            local func, err = loadstring(code, "code")
             if not func then
                 return false, err
             end
+
+            local coro = coroutine.create(func)
 
             local ok
             local helper = function(...)
@@ -33,8 +35,13 @@ core.register_chatcommand("eval",
                 local res = {...}
                 ok = res[1]
                 if n == 2 then
-                    -- returned single value or error - just return it
-                    return dump(res[2])
+                    -- returned single value or error
+                    if ok then
+                        return dump(res[2])
+                    else
+                        -- combine returned error and stack trace
+                        return string.format("%s\n%s", res[2], debug.traceback(coro))
+                    end
                 else
                     -- returned multiple values: display one per line
                     local ret_vals = {}
@@ -44,7 +51,9 @@ core.register_chatcommand("eval",
                     return table.concat(ret_vals, ',\n')
                 end
             end
-            local res = helper(pcall(func))
+            -- Creating a coroutine here, instead of using xpcall,
+            -- allows us to get a clean stack trace up to this call.
+            local res = helper(coroutine.resume(coro))
             return ok, res
         end
     }
