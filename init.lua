@@ -84,15 +84,16 @@ core.register_chatcommand("eval",
             if param == "" then
                 return false, "Gib code pls"
             end
+
             local code = param
-            if code:sub(1, 1) == "=" then
-                code = "return " .. code:sub(2)
-            end
 
             -- echo input back
             core.chat_send_player(player_name, "> " .. code)
 
-            local func, err = loadstring(code, "code")
+            local func, err = loadstring('return ' .. code, "code")
+            if not func then
+                func, err = loadstring(code, "code")
+            end
             if not func then
                 return false, err
             end
