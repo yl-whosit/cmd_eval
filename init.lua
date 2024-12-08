@@ -121,6 +121,7 @@ core.register_chatcommand("eval",
                 ok = res[1]
                 if n == 2 then
                     -- returned single value or error
+                    env._ = res[2]
                     if ok then
                         return dump(res[2])
                     else
@@ -129,6 +130,7 @@ core.register_chatcommand("eval",
                     end
                 else
                     -- returned multiple values: display one per line
+                    env._ = res[2]
                     local ret_vals = {}
                     for i=2, n do
                         table.insert(ret_vals, dump(res[i]))
