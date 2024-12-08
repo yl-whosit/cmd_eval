@@ -7,7 +7,7 @@ _G[MODNAME] = api
 api.e = {}
 
 
-local function create_global_environment(player_name)
+local function create_shared_environment(player_name)
     local me = core.get_player_by_name(player_name)
     local magic_keys = {
         me = function()
@@ -53,10 +53,10 @@ end
 
 
 local function create_command_environment(player_name)
-    local global_env = api.e[player_name]
-    if not global_env then
-        global_env = create_global_environment(player_name)
-        api.e[player_name] = global_env
+    local shared_env = api.e[player_name]
+    if not shared_env then
+        shared_env = create_shared_environment(player_name)
+        api.e[player_name] = shared_env
     end
 
     local me = core.get_player_by_name(player_name)
@@ -67,8 +67,8 @@ local function create_command_environment(player_name)
     setmetatable(
         cmd_env,
         {
-            __index = global_env,
-            __newindex = global_env,
+            __index = shared_env,
+            __newindex = shared_env,
         }
     )
     return cmd_env
