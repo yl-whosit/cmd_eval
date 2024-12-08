@@ -1,4 +1,7 @@
 local MODNAME = core.get_current_modname()
+local MODPATH = core.get_modpath(MODNAME)
+
+local util = dofile(MODPATH .. DIR_DELIM .. "util.lua")
 
 local api = {}
 _G[MODNAME] = api
@@ -8,21 +11,41 @@ api.e = {}
 
 
 local function create_shared_environment(player_name)
-    local me = core.get_player_by_name(player_name)
     local magic_keys = {
         me = function()
             return core.get_player_by_name(player_name)
         end,
         my_pos = function()
-            local pos = here
+            local me = core.get_player_by_name(player_name)
+            local pos = vector.zero() -- FIXME use last command position
             if me:is_player() then
                 pos = me:get_pos()
             end
             return pos
         end,
-        this_obj = function()
+        point = function()
+            local me = core.get_player_by_name(player_name)
+            local pointed_thing = util.raycast_crosshair(me, 200, true, false)
+            if pointed_thing then
+                return pointed_thing.intersection_point
+            end
+            return me:get_pos()
         end,
-        this_node = function()
+        this_obj = function()
+            local me = core.get_player_by_name(player_name)
+            local pointed_thing = util.raycast_crosshair_to_object(me, 200)
+            if pointed_thing then
+                return pointed_thing.ref
+            end
+            return nil
+        end,
+        this_node_pos = function()
+            local me = core.get_player_by_name(player_name)
+            local pointed_thing = util.raycast_crosshair(me, 200, false, false)
+            if pointed_thing then
+                return pointed_thing.under
+            end
+            return vector.round(me:get_pos())
         end,
     }
 
