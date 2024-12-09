@@ -173,6 +173,7 @@ core.register_chatcommand("eval",
             -- Creating a coroutine here, instead of using xpcall,
             -- allows us to get a clean stack trace up to this call.
             local res = helper(coroutine.resume(coro))
+            res = string.gsub(res, "([^\n]+)", "| %1")
             return ok, res
         end
     }
