@@ -2,6 +2,7 @@ local MODNAME = core.get_current_modname()
 local MODPATH = core.get_modpath(MODNAME)
 
 local util = dofile(MODPATH .. DIR_DELIM .. "util.lua")
+local repl_dump = dofile(MODPATH .. DIR_DELIM .. "dump.lua")
 
 local api = {}
 _G[MODNAME] = api
@@ -145,7 +146,7 @@ core.register_chatcommand("eval",
                     -- returned single value or error
                     env._ = res[2]
                     if ok then
-                        return dump(res[2])
+                        return repl_dump(res[2])
                     else
                         -- combine returned error and stack trace
                         return string.format("%s\n%s", res[2], debug.traceback(coro))
@@ -155,7 +156,7 @@ core.register_chatcommand("eval",
                     env._ = res[2]
                     local ret_vals = {}
                     for i=2, n do
-                        table.insert(ret_vals, dump(res[i]))
+                        table.insert(ret_vals, repl_dump(res[i]))
                     end
                     return table.concat(ret_vals, ',\n')
                 end
