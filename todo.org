@@ -1,0 +1,18 @@
+* fix the mess of shared/("global") and per-command environments
+Figure out where to better put default function overrides etc.
+
+Part of the idea of splitting them was to make `here` value local for
+command and constant, while `my_pos` always return your current
+position.  It makes sense only for long-running commands, but I'm
+actually not sure how well those would work.
+
+* add more shortcuts
+- core.get_objects_inside_radius - make `nearby_objects` magic?
+
+* do more to prevent possibilities for crashes
+I think minetest-snippets does more interesting stuff - shamelessly
+copy relevant parts from there.
+
+* add proper REPL
+Register on chat message and let executing multiple commands without
+typing `/eval`.  Maybe via `/repl` command...
