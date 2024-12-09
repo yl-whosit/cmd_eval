@@ -54,6 +54,15 @@ local function create_shared_environment(player_name)
     local eval_env = setmetatable(
         {
             my_name = player_name,
+            print = function(...)
+                local msg = '< '
+                for i = 1, select('#', ...) do
+                    if i > 1 then msg = msg .. '\t' end
+                    msg = msg .. tostring(select(i, ...))
+                end
+                core.chat_send_player(player_name, msg)
+            end,
+            dump = repl_dump,
         },
         {
             __index = function(self, key)
