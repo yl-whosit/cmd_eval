@@ -13,6 +13,8 @@ api.e = {}
 
 local function create_shared_environment(player_name)
     local magic_keys = {
+        -- These are _functions_ pretending to be _variables_, they will
+        -- be called when indexing global environmet to get their value.
         me = function()
             return core.get_player_by_name(player_name)
         end,
@@ -153,7 +155,7 @@ core.register_chatcommand("eval",
                 ok = res[1]
                 if n == 2 then
                     -- returned single value or error
-                    env._ = res[2]
+                    env._ = res[2] -- store result in "_" per-user "global" variable
                     if ok then
                         return repl_dump(res[2])
                     else
@@ -162,7 +164,7 @@ core.register_chatcommand("eval",
                     end
                 else
                     -- returned multiple values: display one per line
-                    env._ = res[2]
+                    env._ = res[2] -- store result in "_" per-user "global" variable
                     local ret_vals = {}
                     for i=2, n do
                         table.insert(ret_vals, repl_dump(res[i]))
