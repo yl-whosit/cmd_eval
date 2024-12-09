@@ -53,7 +53,6 @@ local function create_shared_environment(player_name)
     local eval_env = setmetatable(
         {
             my_name = player_name,
-            here = here,
         },
         {
             __index = function(self, key)
