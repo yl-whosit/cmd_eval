@@ -153,8 +153,12 @@ core.register_chatcommand("eval",
                 local n = select("#", ...)
                 local res = {...}
                 ok = res[1]
-                -- API calls can sometimes return literal "nothing", so `n` can be 1
-                if n <= 2 then
+                if n == 1 then
+                    -- In some cases, calling a function can return literal "nothing":
+                    -- + Executing loadstring(`x = 1`) returns "nothing".
+                    -- + API calls also can sometimes return literal "nothing" instead of nil
+                    return ok and "Done." or "Failed without error message."
+                elseif n == 2 then
                     -- returned single value or error
                     env._ = res[2] -- store result in "_" per-user "global" variable
                     if ok then
