@@ -75,7 +75,7 @@ local function create_shared_environment(player_name)
                         return magic()
                     elseif not g[key] then
                         core.chat_send_player(player_name, string.format("* Accessing undeclared variable: '%s'", key))
-                        g[key] = true
+                        g[key] = true -- warn only once
                     end
                 end
                 return res
