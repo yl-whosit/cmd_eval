@@ -153,7 +153,8 @@ core.register_chatcommand("eval",
                 local n = select("#", ...)
                 local res = {...}
                 ok = res[1]
-                if n == 2 then
+                -- API calls can sometimes return literal "nothing", so `n` can be 1
+                if n <= 2 then
                     -- returned single value or error
                     env._ = res[2] -- store result in "_" per-user "global" variable
                     if ok then
