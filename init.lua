@@ -52,7 +52,7 @@ local function create_shared_environment(player_name)
         end,
     }
 
-    local g = {}
+    local g = {} -- "do not warn again" flags
     local eval_env = setmetatable(
         {
             my_name = player_name,
@@ -108,6 +108,7 @@ local function create_command_environment(player_name)
     return cmd_env
 end
 
+local cc = 0 -- count commands just to identify log messages
 
 core.register_chatcommand("eval",
     {
@@ -119,16 +120,20 @@ core.register_chatcommand("eval",
                 return false, "Gib code pls"
             end
 
+            cc = cc + 1
+
             local code = param
 
             -- echo input back
             core.chat_send_player(player_name, "> " .. code)
+            core.log("action", string.format("[cmd_eval][%s] %s entered %s.", cc, player_name, dump(param)))
 
             local func, err = loadstring('return ' .. code, "code")
             if not func then
                 func, err = loadstring(code, "code")
             end
             if not func then
+                core.log("action", string.format("[cmd_eval][%s] parsing failed.", cc))
                 return false, err
             end
 
@@ -181,6 +186,11 @@ core.register_chatcommand("eval",
             -- allows us to get a clean stack trace up to this call.
             local res = helper(coroutine.resume(coro))
             res = string.gsub(res, "([^\n]+)", "| %1")
+            if ok then
+                core.log("info", string.format("[cmd_eval][%s] succeeded.", cc))
+            else
+                core.log("warning", string.format("[cmd_eval][%s] failed: %s.", cc, dump(res)))
+            end
             return ok, res
         end
     }
