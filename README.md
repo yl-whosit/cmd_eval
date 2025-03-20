@@ -18,6 +18,7 @@ Outputs this:
 This also just works:
 ```
 > x = 2*2
+
 > x
 | 4
 ```
@@ -44,6 +45,7 @@ No need to use `core.chat_send_player()`, just use `print()` - it will do the ri
 
 ```
 > objs = core.get_objects_inside_radius(here, 10)
+
 > for i,o in ipairs(objs) do print(i, (o:get_luaentity() or {}).name, o:get_pos()) end
 < 1 nil (-98.0, 15.5, 33.4)
 < 2 mobs_animal:kitten (-101.0, 16.5, 30.0)
@@ -80,9 +82,12 @@ Show indices for easier manual access:
 |  [1] = #<player: "singleplayer">,
 |  [2] = #<luaentity: "mobs_animal:kitten">,
 | }
+
 > _[2]
 | #<luaentity: "mobs_animal:kitten">
+
 > pos = _:get_pos()
+
 > pos
 | {
 |  x = 123.5,
@@ -91,3 +96,42 @@ Show indices for easier manual access:
 | }
 ```
 
+### Accessing and changing global variables
+You can save some keypresses by not typing `local` in front of every
+variable. Assigning to globals won't clobber them, instead using your personal
+environment. But you can still read globals as usual.
+
+```
+> print(myvar)
+* Accessing undeclared variable: "myvar"
+< nil
+
+> myvar = 1
+| Done.
+
+> print(myvar)
+< 1
+| Done.
+```
+
+If you want to create a new global or actually overwrite existing one,
+you can access global environment through usual `_G` or `global`
+variables. Using them will print a message telling you if global var
+already existed.
+
+```
+> cmd_eval = nil
+| Done.
+
+> cmd_eval  -- accesses real global
+{
+  e = { ... }, ...
+}
+
+> global.cmd_eval = nil
+* Overwriting global: "cmd_eval"
+| Done.
+
+> cmd_eval
+| nil       -- wiped for real
+```

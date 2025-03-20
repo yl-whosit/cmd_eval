@@ -16,3 +16,5 @@ copy relevant parts from there.
 * add proper REPL
 Register on chat message and let executing multiple commands without
 typing `/eval`.  Maybe via `/repl` command...
+* add a "pager" for long output
+To not spam the chat and prevent "Internal error: String too long"

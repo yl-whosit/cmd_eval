@@ -11,6 +11,11 @@ _G[MODNAME] = api
 api.e = {}
 
 
+local function orange_fmt(...)
+    return core.colorize("#FFA91F", string.format(...))
+end
+
+
 local function create_shared_environment(player_name)
     local magic_keys = {
         -- These are _functions_ pretending to be _variables_, they will
@@ -53,6 +58,21 @@ local function create_shared_environment(player_name)
     }
 
     local g = {} -- "do not warn again" flags
+    local global_proxy = setmetatable(
+        {"<proxy>"},
+        {
+            __index = _G,
+            __newindex = function(t, k, v)
+                if _G[k] then
+                    core.chat_send_player(player_name, orange_fmt("* Overwriting global: %s", dump(k)))
+                else
+                    core.chat_send_player(player_name, orange_fmt("* Creating new global: %s", dump(k)))
+                        end
+                _G[k] = v
+            end,
+        }
+    )
+
     local eval_env = setmetatable(
         {
             my_name = player_name,
@@ -64,22 +84,29 @@ local function create_shared_environment(player_name)
                 end
                 core.chat_send_player(player_name, msg)
             end,
-            dump = repl_dump,
+            --global = _G, -- this works, but dumps whole global env if you just print `cmd_eval` value
+            _G = global_proxy, -- use our proxy to get warnings
+            global = global_proxy, -- just a different name for globals
+            --dump = repl_dump,
         },
         {
             __index = function(self, key)
+                -- we give warnings on accessing undeclared var because it's likely a typo
                 local res = rawget(_G, key)
                 if res == nil then
                     local magic = magic_keys[key]
                     if magic then
                         return magic()
                     elseif not g[key] then
-                        core.chat_send_player(player_name, string.format("* Accessing undeclared variable: '%s'", key))
+                        core.chat_send_player(player_name, orange_fmt("* Accessing undeclared variable: %s", dump(key)))
                         g[key] = true -- warn only once
                     end
                 end
                 return res
             end
+            -- there's no __newindex method because we allow assigning
+            -- "globals" inside snippets, since those will be only
+            -- accessible to eval and stored in `eval_env`
         }
     )
     return eval_env
