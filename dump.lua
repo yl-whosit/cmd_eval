@@ -119,4 +119,35 @@ local function repl_dump(o, indent, nested, level)
     return "{"..table.concat(ret, ", ").."}"
 end
 
-return repl_dump
+
+local function dump_dir(o)
+    -- dump only top-level key = value pairs
+    local t = type(o)
+    if t ~= "table" then
+        return basic_dump(o)
+    end
+
+    local ret = {}
+    local dumped_indexes = {}
+    for i, v in ipairs(o) do
+        ret[#ret + 1] = string.format("[%s] = %s", i, basic_dump(v))
+        dumped_indexes[i] = true
+    end
+    for k, v in pairs(o) do
+        if not dumped_indexes[k] then
+            if type(k) ~= "string" or not is_valid_identifier(k) then
+                k = "["..basic_dump(k).."]"
+            end
+            v = basic_dump(v)
+            ret[#ret + 1] = k.." = "..v
+        end
+    end
+    return "{\n "..table.concat(ret, ",\n ").."\n}"
+end
+
+local dump_funcs = {
+    repl_dump = repl_dump,
+    dump_dir = dump_dir,
+}
+
+return dump_funcs

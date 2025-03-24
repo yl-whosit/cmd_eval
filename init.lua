@@ -2,7 +2,9 @@ local MODNAME = core.get_current_modname()
 local MODPATH = core.get_modpath(MODNAME)
 
 local util = dofile(MODPATH .. DIR_DELIM .. "util.lua")
-local repl_dump = dofile(MODPATH .. DIR_DELIM .. "dump.lua")
+local dump_funcs = dofile(MODPATH .. DIR_DELIM .. "dump.lua")
+local repl_dump = dump_funcs.repl_dump
+local dump_dir = dump_funcs.dump_dir
 
 local api = {}
 _G[MODNAME] = api
@@ -85,11 +87,14 @@ local function create_shared_environment(player_name)
                 end
                 core.chat_send_player(player_name, msg)
             end,
-            dir = function(t)
-                -- collect all keys of the table
-                if type(t) == "table" then
+            dir = function(o)
+                core.chat_send_player(player_name, dump_dir(o))
+            end,
+            dir2 = function(o)
+                -- collect all keys of the table, no values
+                if type(o) == "table" then
                     local keys = {}
-                    for k, _ in pairs(t) do
+                    for k, _ in pairs(o) do
                         local key = k
                         local t = type(key)
                         if t == "string" then
