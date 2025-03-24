@@ -77,12 +77,35 @@ local function create_shared_environment(player_name)
         {
             my_name = player_name,
             print = function(...)
+                -- print to chat, instead of console
                 local msg = '< '
                 for i = 1, select('#', ...) do
                     if i > 1 then msg = msg .. '\t' end
                     msg = msg .. tostring(select(i, ...))
                 end
                 core.chat_send_player(player_name, msg)
+            end,
+            dir = function(t)
+                -- collect all keys of the table
+                if type(t) == "table" then
+                    local keys = {}
+                    for k, _ in pairs(t) do
+                        local key = k
+                        local t = type(key)
+                        if t == "string" then
+                            key = '"' .. key .. '"'
+                        elseif t == "number" then
+                            key = '[' .. key .. ']'
+                        else
+                            key = '[' .. tostring(key) .. ']'
+                        end
+                        table.insert(keys, key)
+                    end
+                    table.sort(keys)
+                    core.chat_send_player(player_name, table.concat(keys, ',\n'))
+                else
+                    core.chat_send_player(player_name, string.format("Not a table: %s", dump(t)))
+                end
             end,
             --global = _G, -- this works, but dumps whole global env if you just print `cmd_eval` value
             _G = global_proxy, -- use our proxy to get warnings
