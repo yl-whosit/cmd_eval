@@ -90,7 +90,7 @@ local function create_shared_environment(player_name)
             dir = function(o)
                 core.chat_send_player(player_name, dump_dir(o))
             end,
-            dir2 = function(o)
+            keys = function(o)
                 -- collect all keys of the table, no values
                 if type(o) == "table" then
                     local keys = {}
