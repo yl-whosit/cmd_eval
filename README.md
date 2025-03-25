@@ -135,3 +135,9 @@ already existed.
 > cmd_eval
 | nil       -- wiped for real
 ```
+
+### Other shortcuts
+
+#### `dir()` and `keys()`
+
+List keys of the table (useful for exploring data structures, without flooding your chat).
