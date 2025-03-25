@@ -77,6 +77,9 @@ local function create_shared_environment(player_name)
 
     local eval_env = setmetatable(
         {
+            --global = _G, -- this works, but dumps whole global env if you just print `cmd_eval` value
+            _G = global_proxy, -- use our proxy to get warnings
+            global = global_proxy, -- just a different name for globals
             my_name = player_name,
             print = function(...)
                 -- print to chat, instead of console
@@ -112,9 +115,6 @@ local function create_shared_environment(player_name)
                     core.chat_send_player(player_name, string.format("Not a table: %s", dump(t)))
                 end
             end,
-            --global = _G, -- this works, but dumps whole global env if you just print `cmd_eval` value
-            _G = global_proxy, -- use our proxy to get warnings
-            global = global_proxy, -- just a different name for globals
             --dump = repl_dump,
         },
         {
