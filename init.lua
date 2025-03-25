@@ -116,6 +116,32 @@ local function create_shared_environment(player_name)
                 end
             end,
             --dump = repl_dump,
+            goir = function(radius)
+                local me = core.get_player_by_name(player_name)
+                if me then
+                    local objs = core.get_objects_inside_radius(me:get_pos(), radius)
+                    return objs
+                else
+                    return {}
+                end
+            end,
+            oir = function(radius)
+                local me = core.get_player_by_name(player_name)
+                if me then
+                    local objs = core.get_objects_inside_radius(me:get_pos(), radius)
+                    local nextkey, v
+                    --local i = 1
+                    return function()
+                        -- FIXME skip invalid objects here?
+                        nextkey, v = next(objs, nextkey)
+                        return v
+                        -- i = i + 1
+                        -- return objs[i]
+                    end
+                else
+                    return function() return nil end
+                end
+            end,
         },
         {
             __index = function(self, key)

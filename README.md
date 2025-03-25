@@ -141,3 +141,14 @@ already existed.
 #### `dir()` and `keys()`
 
 List keys of the table (useful for exploring data structures, without flooding your chat).
+
+#### `get_objects_inside_radius()` shortcuts: `goir()` and `oir()`
+
+`goir(radius)` returns a list of objects around you
+`oir(radius)` returns an iterator of objects around you
+
+```
+> goir(100)   -- return a list of objects within 100 units around you
+
+> for v in oir(100) do print((v:get_luaentity() or {}).name) end
+```
