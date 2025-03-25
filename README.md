@@ -59,6 +59,8 @@ Some special variables are provided:
 - `point` - point in the world you're pointing at with your crosshair
 - `this_obj` - entity you're pointing at (can be `nil`)
 
+Do `/eval help` to get a quick reminder of these vars and functions.
+
 ### Better output for arrays and some `userdata` objects
 ```
 > me

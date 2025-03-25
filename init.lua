@@ -57,6 +57,25 @@ local function create_shared_environment(player_name)
             end
             return vector.round(me:get_pos())
         end,
+        help = function()
+            local msg = [[
+# Variables:
+me -- your player object
+my_pos -- your position
+here -- your position where command was executed at (does not change)
+point -- the exact pos you're pointing with the crosshair
+this_obj -- the obj you're pointing at with the crosshair or nil
+this_node_pos -- the node position you're pointing at
+global -- actual global environment (same as _G)
+
+# Functions:
+dir(t) -- print table key/values (returns nothing)
+keys(t) -- print table keys (returns nothing)
+goir(radius) -- return list of objects around you
+oir(radius) -- return iterator for objects around you
+]]
+            core.chat_send_player(player_name, msg)
+        end,
     }
 
     local g = {} -- "do not warn again" flags
@@ -177,6 +196,9 @@ local function create_command_environment(player_name)
     local me = core.get_player_by_name(player_name)
     local here = me:get_pos()
     local cmd_env = {
+        -- This is a special _per-command_ environment.
+        -- The rationale is: each command should have it's own "here"
+        -- It may matter when we start long-running tasks or something.
         here = here,
     }
     setmetatable(
