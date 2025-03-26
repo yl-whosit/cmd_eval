@@ -194,7 +194,7 @@ local function create_command_environment(player_name)
     end
 
     local me = core.get_player_by_name(player_name)
-    local here = me:get_pos()
+    local here = me and me:get_pos()
     local cmd_env = {
         -- This is a special _per-command_ environment.
         -- The rationale is: each command should have it's own "here"
