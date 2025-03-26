@@ -27,35 +27,51 @@ local function create_shared_environment(player_name)
         end,
         my_pos = function()
             local me = core.get_player_by_name(player_name)
-            local pos = vector.zero() -- FIXME use last command position
-            if me:is_player() then
+            local pos = vector.zero() -- FIXME use last command position?
+            if me and me:is_player() then
                 pos = me:get_pos()
             end
             return pos
         end,
         point = function()
             local me = core.get_player_by_name(player_name)
-            local pointed_thing = util.raycast_crosshair(me, 200, true, false)
-            if pointed_thing then
-                return pointed_thing.intersection_point
+            if me then
+                local pointed_thing = util.raycast_crosshair(me, 200, true, false)
+                if pointed_thing then
+                    return pointed_thing.intersection_point
+                end
+                return me:get_pos()
             end
-            return me:get_pos()
         end,
         this_obj = function()
             local me = core.get_player_by_name(player_name)
-            local pointed_thing = util.raycast_crosshair_to_object(me, 200)
-            if pointed_thing then
-                return pointed_thing.ref
+            if me then
+                local pointed_thing = util.raycast_crosshair_to_object(me, 200)
+                if pointed_thing then
+                    return pointed_thing.ref
+                end
             end
             return nil
         end,
-        this_node_pos = function()
+        above = function()
             local me = core.get_player_by_name(player_name)
-            local pointed_thing = util.raycast_crosshair(me, 200, false, false)
-            if pointed_thing then
-                return pointed_thing.under
+            if me then
+                local pointed_thing = util.raycast_crosshair(me, 200, false, false)
+                if pointed_thing then
+                    return pointed_thing.above
+                end
             end
-            return vector.round(me:get_pos())
+            return nil
+        end,
+        under = function()
+            local me = core.get_player_by_name(player_name)
+            if me then
+                local pointed_thing = util.raycast_crosshair(me, 200, false, false)
+                if pointed_thing then
+                    return pointed_thing.under
+                end
+            end
+            return nil
         end,
         help = function()
             local msg = [[
@@ -65,7 +81,8 @@ my_pos -- your position
 here -- your position where command was executed at (does not change)
 point -- the exact pos you're pointing with the crosshair
 this_obj -- the obj you're pointing at with the crosshair or nil
-this_node_pos -- the node position you're pointing at
+above -- same as pointed_thing.above of the node you're pointing at or nil
+under -- same as pointed_thing.under of the node you're pointing at or nil
 global -- actual global environment (same as _G)
 
 # Functions:
