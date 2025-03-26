@@ -164,16 +164,7 @@ oir(radius) -- return iterator for objects around you
             oir = function(radius)
                 local me = core.get_player_by_name(player_name)
                 if me then
-                    local objs = core.get_objects_inside_radius(me:get_pos(), radius)
-                    local nextkey, v
-                    --local i = 1
-                    return function()
-                        -- FIXME skip invalid objects here?
-                        nextkey, v = next(objs, nextkey)
-                        return v
-                        -- i = i + 1
-                        -- return objs[i]
-                    end
+                    return core.objects_inside_radius(me:get_pos(), radius)
                 else
                     return function() return nil end
                 end
