@@ -73,9 +73,24 @@ local function create_shared_environment(player_name)
             end
             return nil
         end,
+        players = function()
+            local pl = core.get_connected_players()
+            local k, v
+            return setmetatable(pl,
+                {
+                    __index = function(_t, n)
+                        return core.get_player_by_name(n)
+                    end,
+                    __call = function(_t)
+                        k, v = next(pl, k)
+                        return v
+                    end,
+                }
+            )
+        end,
         help = function()
             local msg = [[
-# Variables:
+# Magic variables:
 me -- your player object
 my_pos -- your position
 here -- your position where command was executed at (does not change)
@@ -84,6 +99,7 @@ this_obj -- the obj you're pointing at with the crosshair or nil
 above -- same as pointed_thing.above of the node you're pointing at or nil
 under -- same as pointed_thing.under of the node you're pointing at or nil
 global -- actual global environment (same as _G)
+players -- use players.name to access a player (supports `for p in players`)
 
 # Functions:
 dir(t) -- print table key/values (returns nothing)
