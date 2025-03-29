@@ -56,17 +56,17 @@ local function basic_dump(o)
 	--	return string.format("loadstring(%q)", string.dump(o))
     elseif tp == "userdata" then
         if o.is_valid and not o:is_valid() then
-            return string.format('#<invalid_ref: %s>', o)
+            return string.format('#<Obj:invalid: %s>', o)
         end
         if o.is_player then
             if o:is_player() then
-                return string.format('#<player: "%s">', o:get_player_name())
+                return string.format('#<Obj:player: "%s">', o:get_player_name())
             else
                 local e = o:get_luaentity()
                 if e then
-                    return string.format('#<luaentity: "%s">', e.name)
+                    return string.format('#<Obj:lua: "%s">', e.name)
                 else
-                    return string.format('#<ObjectRef: %s>', o)
+                    return string.format('#<Obj: %s>', o)
                 end
             end
         end
