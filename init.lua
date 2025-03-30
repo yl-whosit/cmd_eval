@@ -164,7 +164,7 @@ oir(radius) -- return iterator for objects around you
                     table.sort(keys)
                     core.chat_send_player(player_name, table.concat(keys, ',\n'))
                 else
-                    core.chat_send_player(player_name, string.format("Not a table: %s", dump(t)))
+                    core.chat_send_player(player_name, string.format("Not a table: %s", dump(o)))
                 end
             end,
             --dump = repl_dump,
