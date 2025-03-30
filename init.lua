@@ -116,7 +116,7 @@ oir(radius) -- return iterator for objects around you
         {"<proxy>"},
         {
             __index = _G,
-            __newindex = function(t, k, v)
+            __newindex = function(_t, k, v)
                 if _G[k] then
                     core.chat_send_player(player_name, orange_fmt("* Overwriting global: %s", dump(k)))
                 else
@@ -187,7 +187,7 @@ oir(radius) -- return iterator for objects around you
             end,
         },
         {
-            __index = function(self, key)
+            __index = function(_self, key)
                 -- we give warnings on accessing undeclared var because it's likely a typo
                 local res = rawget(_G, key)
                 if res == nil then
