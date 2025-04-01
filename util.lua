@@ -35,7 +35,8 @@ end
 local function raycast_crosshair_to_object(player, range)
     local p_eye_pos = player_get_eye_pos(player)
     local to = vector.add(p_eye_pos, vector.multiply(player:get_look_dir(), range))
-    local ray = core.raycast(p_eye_pos, to, point_to_objects, point_to_liquids)
+    -- point_to_objects = true, point_to_liquids = false
+    local ray = core.raycast(p_eye_pos, to, true, false)
     local pointed_thing = ray:next()
     while pointed_thing do
         if pointed_thing.type == "object" then
