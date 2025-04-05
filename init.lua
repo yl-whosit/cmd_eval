@@ -111,6 +111,9 @@ dir(t) -- print table key/values (returns nothing)
 keys(t) -- print table keys (returns nothing)
 goir(radius) -- return list of objects around you
 oir(radius) -- return iterator for objects around you
+yield(value) -- yield value and pause eval, resume it with /eval_resume command
+fsdump(value) -- show the value in a formspec window
+fsinput(label, text) -- show a form that will return the text you entered
 ]]
             core.chat_send_player(player_name, msg)
         end,
