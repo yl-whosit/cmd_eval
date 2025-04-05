@@ -154,3 +154,79 @@ List keys of the table (useful for exploring data structures, without flooding y
 
 > for v in oir(100) do print((v:get_luaentity() or {}).name) end
 ```
+
+### Coroutine support
+
+You can call `yield(...)` inside the code you're evaluating. The
+yielded value will be displayed, same as normal returned value, but
+you will also be able to resume the computation by typing
+`/eval_resume`:
+
+```
+> for i=1,3 do yield(i) end
+| 1
+* coroutine suspended, type /eval_resume to continue
+/eval_resume
+* resuming...
+| 2
+* coroutine suspended, type /eval_resume to continue
+/eval_resume
+* resuming...
+| 3
+* coroutine suspended, type /eval_resume to continue
+/eval_resume
+| Done.
+/eval_resume
+* resuming...
+* Nothing to resume
+```
+
+This can allow you for some shortcuts, for example, visiting all players:
+
+```
+/eval for p in players do me:move_to(p:get_pos()); yield() end
+```
+
+type `/eval_resume` to visit next one.
+
+Keep in mind that while the coroutine is paused, it's enviroment can
+change (tables can be modified, some object refs can become invalid etc.)
+
+### Forspec output/input
+
+#### `fsdump(value)`
+
+Evaluate `fsdump(value)` to show the value in a formspec instead of
+chat window. This will allow you to select and copy the dumped text,
+and also keep your chat history from getting spammed. You can call
+this multiple times, inside a loop, etc. The computation will be
+paused (see "coroutine support").
+
+If you close the dump window with ESC or `x` button, the computation
+will remain paused, and can be resumed by typing `/eval_resume`. If
+you push `resume` formspec button, it will be resumed normally.
+
+#### `fsinput(label, text)`
+
+Evaluate t`fsinput()` (arguments are optional) to open a formspec
+where you can input some text. The text you enter will be passed back
+to the coroutine as a return value of the `fsinput()` call.
+
+For example:
+
+`/eval core.get_meta(under):set_string('infotext',fsinput())`
+
+Will open a window that will let you to edit the `infotext` meta field
+of the node you're pointing at.
+
+Or, same thing, but fancier, showing existing infotext in a formspec:
+
+`/eval local m = core.get_meta(under); m:set_string('infotext',fsinput('infotext', m:get_string('infotext')))`
+
+If you close `fsinput()` formspec without pusing `send` button, the
+computation _will not_ be resumed.
+
+You can still resume it by typing `/eval_resume <text>` - the argument
+text will be passed instead of the context of text area of the formspec.
+
+

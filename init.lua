@@ -426,7 +426,7 @@ core.register_on_player_receive_fields(
                 return
             end
 
-            if fields.resume or fields.send or fields.quit then
+            if fields.resume or fields.send then
                 -- check for correct privs again, just in case
                 if not core.check_player_privs(player_name, { server = true }) then
                     return true
@@ -438,12 +438,19 @@ core.register_on_player_receive_fields(
                     return true -- nothing to resume
                 end
 
+                -- Resuming coroutine only in specific cases allows us
+                -- to close the formspec, do something, then resume
+                -- execution by typing `/eval_resume [input]`
                 local ok, res, show_res
                 if formname == "cmd_eval:input" and fields.send then
+                    -- Player had fsinput() call pending and pushed
+                    -- `send` - pass their input back to the coroutine
                     local input = fields.input or ""
                     ok, res = resume_coroutine(player_name, input)
                     show_res = true
                 elseif formname == "cmd_eval:dump" and fields.resume then
+                    -- Player had dump window open, and pushed
+                    -- `resume` so we resume the coro.
                     ok, res = resume_coroutine(player_name)
                     show_res = true
                 end
