@@ -196,6 +196,16 @@ type `/eval_resume` to visit next one.
 Keep in mind that while the coroutine is paused, it's enviroment can
 change (tables can be modified, some object refs can become invalid etc.)
 
+#### An example of using yield()
+
+Evaluate this while pointing at the first position:
+
+`/eval a = point; yield(); b = point; vizlib.draw_line(a,b); print(vector.distance(a,b))`
+
+Then point at the second position, and type `/eval_resume`.
+This will draw a line between 2 points and print the distance between them.
+
+
 ### Formspec output/input
 
 #### `fsdump(value)`
@@ -209,6 +219,24 @@ paused (see "coroutine support").
 If you close the dump window with ESC or `x` button, the computation
 will remain paused, and can be resumed by typing `/eval_resume`. If
 you push `resume` formspec button, it will be resumed normally.
+
+##### Example using `fsdump()`
+
+Inspecting lots of objects around you by visiting and dumping them:
+
+`/eval for o in oir(30) do the_obj = o; me:move_to(o:get_pos()); fsdump(o:get_luaentity()); end`
+
+This command will teleport you to position of some entity nearby and
+open a formspec with the dump of it's lua table. After examining the
+values, you can press the "resume" formspec button to resume the
+evaluation and go to the next entity. We stored current entity in a
+variable, so we can reference it when we paused. If you just closed
+the formspec instead of pressing "resume", you can sill continue
+execution by typing `/eval_resume`.
+
+NOTE: `cmd_eval` currently supports only single coroutine, for
+simplicity reasons; this means that executing `/eval` while paused,
+will overwrite your current coroutine with a new one.
 
 #### `fsinput(label, text)`
 
