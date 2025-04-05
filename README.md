@@ -196,7 +196,7 @@ type `/eval_resume` to visit next one.
 Keep in mind that while the coroutine is paused, it's enviroment can
 change (tables can be modified, some object refs can become invalid etc.)
 
-### Forspec output/input
+### Formspec output/input
 
 #### `fsdump(value)`
 
