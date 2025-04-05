@@ -372,8 +372,6 @@ core.register_chatcommand("eval",
             else
                 last_coro_by_player[player_name] = nil
             end
-
-
             if ok then
                 core.log("info", string.format("[cmd_eval][%s] succeeded.", cc))
             else
@@ -406,6 +404,7 @@ core.register_chatcommand("eval_resume",
 
             -- it's possible to send the string back to the coroutine through this
             local ok, res, raw = helper(coro, env, coroutine.resume(coro, param or ""))
+            res = string.gsub(res, "([^\n]+)", "| %1")
             coro_status = coroutine.status(coro)
             if coro_status == "suspended" then
                 res = string.gsub(res, "([^\n]+)", "| %1")
@@ -414,6 +413,8 @@ core.register_chatcommand("eval_resume",
                 else
                     res = res .. "\n* coroutine suspended, type /eval_resume to continue"
                 end
+            else
+                last_coro_by_player[player_name] = nil
             end
             if ok then
                 core.log("info", string.format("[cmd_eval][%s] succeeded.", coro_cc))
@@ -458,6 +459,7 @@ core.register_on_player_receive_fields(
             else
                 ok, res, raw = helper(coro, env, coroutine.resume(coro))
             end
+            res = string.gsub(res, "([^\n]+)", "| %1")
             coro_status = coroutine.status(coro)
             if coro_status == "suspended" then
                 res = string.gsub(res, "([^\n]+)", "| %1")
@@ -466,6 +468,8 @@ core.register_on_player_receive_fields(
                 else
                     res = res .. "\n* coroutine suspended, type /eval_resume to continue"
                 end
+            else
+                last_coro_by_player[player_name] = nil
             end
             core.chat_send_player(player_name, res)
             if ok then
