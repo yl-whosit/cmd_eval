@@ -192,7 +192,7 @@ oir(radius) -- return iterator for objects around you
                 local fs = {
                     "formspec_version[6]",
                     "size[19,10]",
-                    "textarea[0.1,0.8;18.8,8.1;a;Output;", output, "]",
+                    "textarea[0.1,0.8;18.8,8.1;a;Output;", core.formspec_escape(output), "]",
                     "button_exit[18.1,0.1;0.8,0.7;x;x]",
                     "button_exit[15.9,9.1;3,0.8;resume;resume]",
                 }
@@ -201,12 +201,13 @@ oir(radius) -- return iterator for objects around you
                 coroutine.yield(WAIT_FOR_FORMSPEC)
                 return value
             end,
-            fsinput = function(label)
-                label = label or "Input"
+            fsinput = function(label, text)
+                label = label and tostring(label) or "Input"
+                text = text and tostring(text) or ""
                 local fs = {
                     "formspec_version[6]",
                     "size[19,10]",
-                    "textarea[0.1,0.8;18.8,8.1;input;", label, ";]",
+                    "textarea[0.1,0.8;18.8,8.1;input;", core.formspec_escape(label), ";", core.formspec_escape(text), "]",
                     "button_exit[18.1,0.1;0.8,0.7;x;x]",
                     "button_exit[15.9,9.1;3,0.8;send;send]",
                 }
