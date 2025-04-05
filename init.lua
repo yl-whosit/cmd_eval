@@ -426,30 +426,31 @@ core.register_on_player_receive_fields(
                 return
             end
 
-            if not (fields.resume or fields.send) then
-                return true
-            end
+            if fields.resume or fields.send or fields.quit then
+                local last = last_coro_by_player[player_name]
+                if not last then
+                    return true -- nothing to resume
+                end
 
-            local last = last_coro_by_player[player_name]
-            if not last then
-                return true -- nothing to resume
-            end
+                local ok, res, show_res
+                if formname == "cmd_eval:input" and fields.send then
+                    local input = fields.input or ""
+                    ok, res = resume_coroutine(player_name, input)
+                    show_res = true
+                elseif formname == "cmd_eval:dump" and fields.resume then
+                    ok, res = resume_coroutine(player_name)
+                    show_res = true
+                end
 
-            local ok, res
-            if formname == "cmd_eval:input" then
-                local input = fields.input or ""
-                ok, res = resume_coroutine(player_name, input)
-            else
-                ok, res = resume_coroutine(player_name)
+                if show_res then
+                    if ok then
+                        core.chat_send_player(player_name, res)
+                    else
+                        -- not sure if we need to handle errors here in some way?
+                        core.chat_send_player(player_name, res)
+                    end
+                end
             end
-
-            if ok then
-                core.chat_send_player(player_name, res)
-            else
-                -- not sure if we need to handle errors here in some way?
-                core.chat_send_player(player_name, res)
-            end
-
             return true
         end
         return  -- did not match known FS names
