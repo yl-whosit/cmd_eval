@@ -1,7 +1,11 @@
 ## Adds `/eval` command
 
-`/eval` takes lua code as argument and executes it. It will echo your command and show it's output and returned value.
-Each player gets their own "global" environment so they can't interfere with other user's envs by accident (exposed as `cmd_eval.e[player_name]`).
+`/eval` takes lua code as argument and executes it. It will echo your
+command and show it's output and returned value.  Each player gets
+their own "global" environment so they can't interfere with other
+user's envs by accident (exposed as `cmd_eval.e[player_name]`).
+
+Type `/eval help` to see the built-in help.
 
 ## Some nice features:
 ### Expression/statement agnostic
@@ -230,3 +234,9 @@ You can still resume it by typing `/eval_resume <text>` - the argument
 text will be passed instead of the context of text area of the formspec.
 
 
+### Resetting your personal environment
+
+If your environment gets messed up, or you just want to get rid of the
+variables you've stored, you can type:
+
+`/eval_reset`

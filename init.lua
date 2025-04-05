@@ -425,6 +425,19 @@ core.register_chatcommand("eval_resume",
 )
 
 
+core.register_chatcommand("eval_reset",
+    {
+        description = "Restore your environment by clearing all variables you assigned",
+        privs = { server = true },
+        func = function(player_name, param)
+            core.log("action", string.format("[cmd_eval] %s reset their environmet", player_name, dump(param)))
+            api.e[player_name] = nil
+            return true, orange_fmt("* Your environment has been reset to default.")
+        end
+    }
+)
+
+
 core.register_on_player_receive_fields(
     function(player, formname, fields)
         if formname == "cmd_eval:dump" or formname == "cmd_eval:input" then
