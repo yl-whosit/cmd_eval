@@ -185,6 +185,7 @@ oir(radius) -- return iterator for objects around you
                     return function() return nil end
                 end
             end,
+            yield = coroutine.yield,
         },
         {
             __index = function(_self, key)
@@ -237,6 +238,57 @@ end
 
 local cc = 0 -- count commands just to identify log messages
 
+local last_coro_by_player = {}
+-- setmetatable({},
+--     {
+--         __index = function(t, k) local new = {};
+--             rawset(t, k, new);
+--             return new
+--         end
+--     }
+-- )
+
+
+local helper = function(coro, env, ...)
+    -- We need this helper to access returned values
+    -- twice - to get the number and to make a table with
+    -- them.
+    --
+    -- This is a little convoluted, but it's to make sure
+    -- that evaluating functions like:
+    --
+    -- (function() return 1,nil,3 end)()
+    --
+    -- will display all returned values.
+    local n = select("#", ...)
+    local res = {...}
+    local ok = res[1]
+    if n == 1 then
+        -- In some cases, calling a function can return literal "nothing":
+        -- + Executing loadstring(`x = 1`) returns "nothing".
+        -- + API calls also can sometimes return literal "nothing" instead of nil
+        return ok, ok and "Done." or "Failed without error message."
+    elseif n == 2 then
+        -- returned single value or error
+        env._ = res[2] -- store result in "_" per-user "global" variable
+        if ok then
+            return ok, repl_dump(res[2])
+        else
+            -- combine returned error and stack trace
+            return ok, string.format("%s\n%s", res[2], debug.traceback(coro))
+        end
+    else
+        -- returned multiple values: display one per line
+        env._ = res[2] -- store result in "_" per-user "global" variable
+        local ret_vals = {}
+        for i=2, n do
+            table.insert(ret_vals, repl_dump(res[i]))
+        end
+        return ok, table.concat(ret_vals, ',\n')
+    end
+end
+
+
 core.register_chatcommand("eval",
     {
         params = "<code>",
@@ -270,48 +322,57 @@ core.register_chatcommand("eval",
 
             local coro = coroutine.create(func)
 
-            local ok
-            local helper = function(...)
-                -- We need this helper to access returned values
-                -- twice - to get the number and to make a table with
-                -- them.
-                --
-                -- This is a little convoluted, but it's to make sure
-                -- that evaluating functions like:
-                --
-                -- (function() return 1,nil,3 end)()
-                --
-                -- will display all returned values.
-                local n = select("#", ...)
-                local res = {...}
-                ok = res[1]
-                if n == 1 then
-                    -- In some cases, calling a function can return literal "nothing":
-                    -- + Executing loadstring(`x = 1`) returns "nothing".
-                    -- + API calls also can sometimes return literal "nothing" instead of nil
-                    return ok and "Done." or "Failed without error message."
-                elseif n == 2 then
-                    -- returned single value or error
-                    env._ = res[2] -- store result in "_" per-user "global" variable
-                    if ok then
-                        return repl_dump(res[2])
-                    else
-                        -- combine returned error and stack trace
-                        return string.format("%s\n%s", res[2], debug.traceback(coro))
-                    end
-                else
-                    -- returned multiple values: display one per line
-                    env._ = res[2] -- store result in "_" per-user "global" variable
-                    local ret_vals = {}
-                    for i=2, n do
-                        table.insert(ret_vals, repl_dump(res[i]))
-                    end
-                    return table.concat(ret_vals, ',\n')
-                end
-            end
+            last_coro_by_player[player_name] = {
+                coro = coro,
+                env = env,
+            }
+
             -- Creating a coroutine here, instead of using xpcall,
             -- allows us to get a clean stack trace up to this call.
-            local res = helper(coroutine.resume(coro))
+            local ok, res = helper(coro, env, coroutine.resume(coro))
+            core.chat_send_player(player_name, string.format("coro: %s", coroutine.status(coro)))
+            res = string.gsub(res, "([^\n]+)", "| %1")
+            local coro_status = coroutine.status(coro)
+            if coro_status == "suspended" then
+                res = res .. "\n* coroutine suspended, type /eval_resume to continue"
+            else
+                last_coro_by_player[player_name] = nil
+            end
+            if ok then
+                core.log("info", string.format("[cmd_eval][%s] succeeded.", cc))
+            else
+                core.log("warning", string.format("[cmd_eval][%s] failed: %s.", cc, dump(res)))
+            end
+            return ok, res
+        end
+    }
+)
+
+
+
+core.register_chatcommand("eval_resume",
+    {
+        params = "none",
+        description = "Resume previous command",
+        privs = { server = true },
+        func = function(player_name, param)
+            -- echo input back
+            core.log("action", string.format("[cmd_eval][%s] %s resumed previous command", cc, player_name, dump(param)))
+
+            local last = last_coro_by_player[player_name]
+            if not last then
+                return false, "* Nothing to resume"
+            end
+            local coro, env = last.coro, last.env
+
+            local coro_status = coroutine.status(coro)
+            if coro_status ~= "suspended" then
+                return false, "* Cannot resume dead coroutine"
+            end
+
+            core.chat_send_player(player_name, "* resuming...")
+
+            local ok, res = helper(coro, env, coroutine.resume(coro))
             res = string.gsub(res, "([^\n]+)", "| %1")
             if ok then
                 core.log("info", string.format("[cmd_eval][%s] succeeded.", cc))
