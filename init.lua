@@ -415,7 +415,7 @@ core.register_chatcommand("eval_resume",
         description = "Resume previous command",
         privs = { server = true },
         func = function(player_name, param)
-            core.log("action", string.format("[cmd_eval][%s] %s resumed previous command", coro_cc, player_name, dump(param)))
+            core.log("action", string.format("[cmd_eval] %s resumed previous command", player_name, dump(param)))
             core.chat_send_player(player_name, "* resuming...")
 
             -- it's possible to send the string back to the coroutine through this
