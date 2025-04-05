@@ -427,6 +427,12 @@ core.register_on_player_receive_fields(
             end
 
             if fields.resume or fields.send or fields.quit then
+                -- check for correct privs again, just in case
+                if not core.check_player_privs(player_name, { server = true }) then
+                    return true
+                end
+
+                -- check if there's anything wating for the formspec
                 local last = last_coro_by_player[player_name]
                 if not last then
                     return true -- nothing to resume
