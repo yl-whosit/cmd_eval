@@ -83,8 +83,12 @@ local function create_shared_environment(player_name)
                         return core.get_player_by_name(n)
                     end,
                     __call = function(_t)
-                        k, v = next(pl, k)
-                        return v
+                        while next(pl, k) do
+                            k, v = next(pl, k)
+                            if v:is_valid() then
+                                return v
+                            end
+                        end
                     end,
                 }
             )
