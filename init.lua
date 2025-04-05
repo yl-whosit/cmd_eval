@@ -200,6 +200,20 @@ oir(radius) -- return iterator for objects around you
                 core.show_formspec(player_name, "cmd_eval:dump", table.concat(fs, ""))
                 coroutine.yield(WAIT_FOR_FORMSPEC)
                 return value
+            end,
+            fsinput = function(label)
+                label = label or "Input"
+                local fs = {
+                    "formspec_version[6]",
+                    "size[19,10]",
+                    "textarea[0.1,0.8;18.8,8.1;input;", label, ";]",
+                    "button_exit[18.1,0.1;0.8,0.7;x;x]",
+                    "button_exit[15.9,9.1;3,0.8;send;send]",
+                }
+
+                core.show_formspec(player_name, "cmd_eval:input", table.concat(fs, ""))
+                local result = coroutine.yield(WAIT_FOR_FORMSPEC)
+                return result
             end
         },
         {
@@ -373,7 +387,7 @@ core.register_chatcommand("eval",
 
 core.register_chatcommand("eval_resume",
     {
-        params = "none",
+        params = "<string to pass through yield>",
         description = "Resume previous command",
         privs = { server = true },
         func = function(player_name, param)
@@ -390,7 +404,8 @@ core.register_chatcommand("eval_resume",
 
             core.chat_send_player(player_name, "* resuming...")
 
-            local ok, res, raw = helper(coro, env, coroutine.resume(coro))
+            -- it's possible to send the string back to the coroutine through this
+            local ok, res, raw = helper(coro, env, coroutine.resume(coro, param or ""))
             coro_status = coroutine.status(coro)
             if coro_status == "suspended" then
                 res = string.gsub(res, "([^\n]+)", "| %1")
@@ -413,49 +428,54 @@ core.register_chatcommand("eval_resume",
 
 core.register_on_player_receive_fields(
     function(player, formname, fields)
-        if formname ~= "cmd_eval:dump" then
-            return
-        end
-        local player_name = player and player.is_player and player:is_player() and player:get_player_name()
-        if not player_name then
-            return
-        end
-
-        if not fields.resume then
-            return true
-        end
-
-        local last = last_coro_by_player[player_name]
-        if not last then
-            return true -- nothing to resume
-        end
-        local coro_cc, coro, env = last.cc, last.coro, last.env
-
-        local coro_status = coroutine.status(coro)
-        if coro_status ~= "suspended" then
-            core.close_formspec(player_name, "cmd_eval:dump")
-            return true
-        end
-
-        core.chat_send_player(player_name, "* resuming...")
-
-        local ok, res, raw = helper(coro, env, coroutine.resume(coro))
-        coro_status = coroutine.status(coro)
-        if coro_status == "suspended" then
-            res = string.gsub(res, "([^\n]+)", "| %1")
-            if raw == WAIT_FOR_FORMSPEC then
-                res = "* Waiting for formspec..."
-            else
-                res = res .. "\n* coroutine suspended, type /eval_resume to continue"
+        if formname == "cmd_eval:dump" or formname == "cmd_eval:input" then
+            local player_name = player and player.is_player and player:is_player() and player:get_player_name()
+            if not player_name then
+                return
             end
-        end
-        core.chat_send_player(player_name, res)
-        if ok then
-            core.log("info", string.format("[cmd_eval][%s] succeeded.", coro_cc))
-        else
-            core.log("warning", string.format("[cmd_eval][%s] failed: %s.", coro_cc, dump(res)))
-        end
 
-        return true
+            if not (fields.resume or fields.send) then
+                return true
+            end
+
+            local last = last_coro_by_player[player_name]
+            if not last then
+                return true -- nothing to resume
+            end
+            local coro_cc, coro, env = last.cc, last.coro, last.env
+
+            local coro_status = coroutine.status(coro)
+            if coro_status ~= "suspended" then
+                core.close_formspec(player_name, formname)
+                return true
+            end
+
+            core.chat_send_player(player_name, "* resuming...")
+            local ok, res, raw
+            if formname == "cmd_eval:input" then
+                local input = fields.input or ""
+                ok, res, raw = helper(coro, env, coroutine.resume(coro, input))
+            else
+                ok, res, raw = helper(coro, env, coroutine.resume(coro))
+            end
+            coro_status = coroutine.status(coro)
+            if coro_status == "suspended" then
+                res = string.gsub(res, "([^\n]+)", "| %1")
+                if raw == WAIT_FOR_FORMSPEC then
+                    res = "* Waiting for formspec..."
+                else
+                    res = res .. "\n* coroutine suspended, type /eval_resume to continue"
+                end
+            end
+            core.chat_send_player(player_name, res)
+            if ok then
+                core.log("info", string.format("[cmd_eval][%s] succeeded.", coro_cc))
+            else
+                core.log("warning", string.format("[cmd_eval][%s] failed: %s.", coro_cc, dump(res)))
+            end
+
+            return true
+        end
+        return  -- did not match known FS names
     end
 )
