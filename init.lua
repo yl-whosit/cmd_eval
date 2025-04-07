@@ -195,7 +195,7 @@ fsinput(label, text) -- show a form that will return the text you entered
             end,
             yield = coroutine.yield,
             fsdump = function(value)
-                local output = dump(value)
+                local output = type(value) == "string" and value or dump(value)
                 local fs = {
                     "formspec_version[6]",
                     "size[19,10]",
