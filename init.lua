@@ -222,7 +222,9 @@ fsinput(label, text) -- show a form that will return the text you entered
                 core.show_formspec(player_name, "cmd_eval:input", table.concat(fs, ""))
                 local result = coroutine.yield(WAIT_FOR_FORMSPEC)
                 return result
-            end
+            end,
+            ascii = util.ascii,
+            unascii = util.unascii,
         },
         {
             __index = function(_self, key)

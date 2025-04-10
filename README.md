@@ -262,6 +262,27 @@ You can still resume it by typing `/eval_resume <text>` - the argument
 text will be passed instead of the context of text area of the formspec.
 
 
+### More utilities
+
+#### Binary data
+
+##### `ascii()` and `unascii()`
+
+Have you ever encountered "<invalid UTF-8 string>" somewhere with no
+easy way to display it?
+
+`ascii()` will allow you to inspect these strings (which may be just
+some broken unicode or arbitrary binary data).
+
+`ascii(str)` will escape all control sequences and unprintable
+characters so you can output it normally. It works well with broken
+strings, because printable ASCII characters will be kept unchanged.
+
+The reverse of this is `unascii(str)`, which will take the escaped
+sequence and turn it back into raw bytes. This supports only `\xFF`
+hex escapes, but it works well enough in pair with `ascii()`.
+
+
 ### Resetting your personal environment
 
 If your environment gets messed up, or you just want to get rid of the
