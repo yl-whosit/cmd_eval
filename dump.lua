@@ -55,13 +55,12 @@ local function basic_dump(o)
 	--elseif tp == "function" then
 	--	return string.format("loadstring(%q)", string.dump(o))
     elseif tp == "userdata" then
-        if o.is_valid and not o:is_valid() then
-            return string.format('#<Obj:invalid: %s>', o)
-        end
-        if o.is_player then
-            if o:is_player() then
+        if getmetatable(o) then
+            if o.is_valid and not o:is_valid() then
+                return string.format('#<Obj:invalid: %s>', o)
+            elseif o.is_player and o:is_player() then
                 return string.format('#<Obj:player: "%s">', o:get_player_name())
-            else
+            elseif o.get_luaentity then
                 local e = o:get_luaentity()
                 if e then
                     return string.format('#<Obj:lua: "%s">', e.name)
